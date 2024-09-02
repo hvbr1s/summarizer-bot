@@ -31,9 +31,10 @@ This application transcribes and summarizes audio recordings of meetings or call
 
 6. Set up environment variables:
    - Create a `.env` file in the project root.
-   - Add your Gladia API key:
+   - Add your Gladia and Anthropic API keys:
      ```
-     GLADIA_KEY=your_gladia_api_key_here
+     GLADIA_KEY=<your_key>
+     ANTHROPIC_API_KEY=<your_key>
      ```
 
 ## Usage
