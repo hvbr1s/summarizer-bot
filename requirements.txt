@@ -1,0 +1,9 @@
+anthropic
+aiohttp
+python-dotenv
+pydantic
+uuid
+pathlib
+bs4
+apscheduler
+asyncio
