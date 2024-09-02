@@ -14,13 +14,15 @@ First, carefully read and analyze the following transcript:
 
 After analyzing the transcript, summarize the meeting by following these guidelines:
 
+<thinking>
 1. Identify the main security concerns expressed by the {project_name} team.
 2. Determine the areas of focus for the manual code review.
 3. Identify the aspects that should be prioritized for formal verification using the Certora Prover.
 4. Note any specific requests or concerns raised by either team.
 5. Highlight any agreed-upon next steps or action items.
+<thinking>
 
-Present your summary in markdown format, using appropriate headings, bullet points, and formatting to ensure clarity and readability. Structure your summary as follows:
+Present your summary in text format, using appropriate headings, bullet points, and formatting to ensure clarity and readability. Structure your summary as follows:
 
 1. Brief introduction
 2. Main security concerns
@@ -29,9 +31,8 @@ Present your summary in markdown format, using appropriate headings, bullet poin
 5. Additional notes or action items
 
 Remember to think step by step as you analyze the transcript and formulate your summary. Consider the context of a security audit and the two-part process involving manual code review and formal verification.
-
-Begin your response with <summary> and end it with </summary>. Use markdown formatting within these tags.
-    
+Begin your response now.
+   
 '''    
         return SUMMARIZER
     except Exception as e:

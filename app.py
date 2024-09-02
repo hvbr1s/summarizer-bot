@@ -1,9 +1,9 @@
-
 import os
 import aiohttp
 import asyncio
 from dotenv import load_dotenv
 from llm.call import summarize
+from llm.process import process_transcription
 
 # Initialize environment variables
 load_dotenv()
@@ -13,7 +13,7 @@ speakers = input("🌐 Great! How many speakers took part in the call: ").strip(
 SPEAKERS = int(speakers)
 
 # Load Audio File
-AUDIO_FILE = './audio_file/meeting_recording.mp3'
+AUDIO_FILE = './audio_file/meeting.mp3'
 
 # Load API keys
 GLADIA_KEY = os.environ['GLADIA_KEY']
@@ -32,9 +32,7 @@ async def upload_audio(file_path):
                 data = aiohttp.FormData()
                 data.add_field('audio', audio_file, filename=os.path.basename(file_full_path))
                 async with session.post(url, headers=headers, data=data) as response:
-                    print(f"Response status code: {response.status}")
                     response_text = await response.text()
-                    print(f"Response content: {response_text}")
                     response.raise_for_status()  
                     return await response.json()
     except FileNotFoundError:
@@ -50,11 +48,13 @@ async def get_transcription(audio_url):
         "Content-Type": "application/json"
     }
     data = {
+        "context_prompt": "This is the transcript of a meeting between the Certora team and a client team regarding a security audit.",
         "language": "en",
         "diarization": True,
         "diarization_config": {
-                "number_of_speakers": SPEAKERS
-            },
+            "min_speakers": 2,
+            "max_speakers": SPEAKERS
+        },
         "audio_url": audio_url
     }
     
@@ -75,7 +75,9 @@ async def get_transcription(audio_url):
                 poll_data = await poll_response.json()
                 if poll_data.get("status") == "done":
                     print("\033[K\nTranscription complete!")
-                    return poll_data.get("result", {}).get("transcription", {}).get("full_transcript")
+                    formatted_conversation = await process_transcription(poll_data)
+                    print(formatted_conversation)
+                    return formatted_conversation
                 else:
                     progress_dots += "."
                     print(f"\rTranscription in progress...{progress_dots}", end="", flush=True)
@@ -85,7 +87,8 @@ async def get_transcription(audio_url):
 async def main():   
     # Define output file
     output_folder = f'./calls/{PROJECT_NAME}/'
-    summary_file = f'{output_folder}{PROJECT_NAME}_call_summary.md'
+    summary_file = f'{output_folder}{PROJECT_NAME}_summary.txt'
+    transcript_file = f'{output_folder}{PROJECT_NAME}_transcript.txt'
     
     # Check if the output folder exists, if not create it
     if not os.path.exists(output_folder):
@@ -100,11 +103,13 @@ async def main():
         raise ValueError("Audio URL is missing in the upload response.")
     
     transcript = await get_transcription(audio_url)
-    print(f'Transcript ready 📜✅')
+    with open(transcript_file, 'w') as txt_file:
+        txt_file.write(transcript)
+    print(f"Transcript has been written to {transcript_file}💾✅")
     
     summary = await summarize(transcript, PROJECT_NAME.capitalize())
-    with open(summary_file, 'w') as md_file:
-        md_file.write(summary)
+    with open(summary_file, 'w') as tx_file:
+        tx_file.write(summary)
     print(f"Summary has been written to {summary_file}💾✅")
     
 # Run the async main function
