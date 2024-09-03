@@ -1,4 +1,3 @@
-
 import textwrap
 from collections import defaultdict
 
@@ -7,7 +6,7 @@ async def process_transcription(poll_data):
     speakers = defaultdict(list)
     
     for utterance in utterances:
-        speaker = f"Speaker {utterance['speaker']}"
+        speaker = f"speaker_{utterance['speaker'] + 1}"  # Adding 1 to start from speaker_1
         text = utterance['text'].strip()
         
         # Capitalize the first letter of each sentence
@@ -22,11 +21,12 @@ async def process_transcription(poll_data):
     
     conversation = []
     for speaker, texts in speakers.items():
-        conversation.append(f"{speaker}:")
+        conversation.append(f"<{speaker}>")
         for text in texts:
             # Split long lines
             wrapped_text = textwrap.fill(text, width=80, initial_indent='  ', subsequent_indent='    ')
             conversation.append(wrapped_text)
-        conversation.append("") 
+        conversation.append(f"</{speaker}>")
+        conversation.append("")  # Add a blank line between speakers
     
     return "\n".join(conversation)
