@@ -105,7 +105,11 @@ async def main():
     finished_transcript = await process_transcription(utterances, transcript_file)
     print(f"Transcript has been written to {transcript_file}💾✅")
     
-    summary = await summarize(finished_transcript, PROJECT_NAME.capitalize())
+    # Read the content of the transcript file
+    with open(finished_transcript, 'r') as file:
+        transcript_content = file.read()  
+    
+    summary = await summarize(transcript_content, PROJECT_NAME.capitalize())
     with open(summary_file, 'w') as tx_file:
         tx_file.write(summary)
     print(f"Summary has been written to {summary_file}💾✅")
