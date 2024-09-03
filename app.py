@@ -32,7 +32,6 @@ async def upload_audio(file_path):
                 data = aiohttp.FormData()
                 data.add_field('audio', audio_file, filename=os.path.basename(file_full_path))
                 async with session.post(url, headers=headers, data=data) as response:
-                    response_text = await response.text()
                     response.raise_for_status()  
                     return await response.json()
     except FileNotFoundError:
@@ -75,14 +74,14 @@ async def get_transcription(audio_url):
                 poll_data = await poll_response.json()
                 if poll_data.get("status") == "done":
                     print("\033[K\nTranscription complete!")
-                    formatted_conversation = await process_transcription(poll_data)
-                    print(formatted_conversation)
-                    return formatted_conversation
+                    # Extract the relevant transcription data
+                    transcription = poll_data.get("result", {}).get("transcription", {})
+                    utterances = transcription.get("utterances", [])
+                    return utterances
                 else:
                     progress_dots += "."
                     print(f"\rTranscription in progress...{progress_dots}", end="", flush=True)
-                    await asyncio.sleep(1) 
-                
+                    await asyncio.sleep(1)
 
 async def main():   
     # Define output file
@@ -98,16 +97,15 @@ async def main():
     # Upload audio and get transcription
     upload_response = await upload_audio(AUDIO_FILE)
     audio_url = upload_response.get("audio_url")
-    print(audio_url)
+    print(f'Job URL: {audio_url}')
     if not audio_url:
         raise ValueError("Audio URL is missing in the upload response.")
     
-    transcript = await get_transcription(audio_url)
-    with open(transcript_file, 'w') as txt_file:
-        txt_file.write(transcript)
+    utterances = await get_transcription(audio_url)
+    finished_transcript = await process_transcription(utterances, transcript_file)
     print(f"Transcript has been written to {transcript_file}💾✅")
     
-    summary = await summarize(transcript, PROJECT_NAME.capitalize())
+    summary = await summarize(finished_transcript, PROJECT_NAME.capitalize())
     with open(summary_file, 'w') as tx_file:
         tx_file.write(summary)
     print(f"Summary has been written to {summary_file}💾✅")
