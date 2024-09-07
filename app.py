@@ -51,6 +51,7 @@ async def get_transcription(audio_url):
         "language": "en",
         "diarization": True,
         "diarization_config": {
+            "number_of_speakers": SPEAKERS,
             "min_speakers": 2,
             "max_speakers": SPEAKERS
         },
